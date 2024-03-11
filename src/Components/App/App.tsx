@@ -1,20 +1,40 @@
-import style from "./app.module.css";
-import Select from "../Select/Select";
+import Select, { SelectOptions } from "../Select/Select";
 import { useState } from "react";
+import styles from "./app.module.css";
 
 const options = [
   { lable: "First", value: 1 },
   { lable: "Secong", value: 2 },
   { lable: "Third", value: 3 },
   { lable: "Fourth", value: 4 },
+  { lable: "Fifth", value: 5 },
+  { lable: "Sixth", value: 6 },
+  { lable: "Seventh", value: 7 },
 ];
 
 function App() {
-  const [value, setValue] = useState<(typeof options)[0] | undefined>(
+  const [multipleValue, setMultipleValue] = useState<SelectOptions[]>([
+    options[0],
+  ]);
+  const [singleValue, setSingleValue] = useState<SelectOptions | undefined>(
     options[0]
   );
+
   return (
-    <Select options={options} value={value} onChange={(o) => setValue(o)} />
+    <div className={styles.app}>
+      <Select
+        multiple={true}
+        options={options}
+        value={multipleValue}
+        onChange={(elem) => setMultipleValue(elem)}
+      />
+      <br />
+      <Select
+        options={options}
+        value={singleValue}
+        onChange={(elem) => setSingleValue(elem)}
+      />
+    </div>
   );
 }
 

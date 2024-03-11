@@ -1,74 +1,141 @@
-import { useEffect, useState, MouseEvent } from "react";
-import style from "./select.module.css";
+import { useEffect, useState, MouseEvent, KeyboardEvent } from "react";
+import styles from "./select.module.css";
 
-type SelectOptions = {
-  label: string;
+export type SelectOptions = {
+  lable: string;
   value: string | number;
 };
 
-interface SelectionProps {
-  value?: SelectOptions;
+type MultipleSelectProps = {
+  multiple: true;
+  onChange: (value: SelectOptions[]) => void;
+  value: SelectOptions[];
+};
+
+type SingleSelectProps = {
+  multiple?: false;
   onChange: (value: SelectOptions | undefined) => void;
+  value: SelectOptions | undefined;
+};
+
+type SelectionProps = {
   options: SelectOptions[];
-}
+} & (SingleSelectProps | MultipleSelectProps);
 
 export default function Select({
+  multiple,
   value,
   onChange,
   options,
 }: SelectionProps): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [mouseEnterElem, setMouseEnterElem] = useState<number | undefined>();
+  const [mouseEnterIndex, setMouseEnterIndex] = useState<number | undefined>();
 
   function clearOptions(e: MouseEvent<HTMLButtonElement>): void {
     e.stopPropagation();
-    onChange(undefined);
+    multiple ? onChange([]) : onChange(undefined);
   }
 
-  function selectOptions(option: SelectOptions): void {
-    if (option === value) return;
-    onChange(option);
+  function selectOption(option: SelectOptions): void {
+    if (multiple) {
+      if (value.includes(option)) {
+        onChange(value.filter((elem) => elem !== option));
+      } else {
+        onChange([...value, option]);
+      }
+    } else if (option !== value) {
+      onChange(option);
+    }
+  }
+
+  function isOptionSelected(option: SelectOptions) {
+    return multiple ? value.includes(option) : option === value;
+  }
+
+  function handlerKeyPress(e: KeyboardEvent) {
+    switch (e.code) {
+      case "Escape":
+        return setIsOpen(false);
+
+      case "Enter":
+        return mouseEnterIndex && selectOption(options[mouseEnterIndex]);
+
+      case "Space":
+        return mouseEnterIndex && selectOption(options[mouseEnterIndex]);
+
+      case "ArrowUp":
+        return setMouseEnterIndex((state) => {
+          if (state === undefined || state <= 0) return options.length - 1;
+
+          return state && state - 1;
+        });
+
+      case "ArrowDown":
+        return setMouseEnterIndex((state) => {
+          if (state === undefined || state >= options.length - 1) return 0;
+          return state + 1;
+        });
+
+      default:
+        break;
+    }
   }
 
   useEffect(() => {
-    setMouseEnterElem(undefined);
+    setMouseEnterIndex(undefined);
   }, [isOpen]);
 
   return (
     <div
+      onKeyDown={(e: KeyboardEvent) => handlerKeyPress(e)}
       onBlur={() => {
         setIsOpen(false);
       }}
       onClick={() => setIsOpen((state) => !state)}
       tabIndex={0}
-      className={style.container}
+      className={styles.container}
     >
-      <span className={style.value}>{value?.label}</span>
+      <span className={styles.value}>
+        {multiple
+          ? value?.map((elem) => (
+              <button
+                key={elem.value}
+                onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                  e.stopPropagation();
+                  selectOption(elem);
+                }}
+                className={styles.optionBage}
+              >
+                {elem.lable}
+                <span className={styles.removeBtn}> &times;</span>
+              </button>
+            ))
+          : value?.lable}
+      </span>
       <button
         onClick={(e: MouseEvent<HTMLButtonElement>) => {
           clearOptions(e);
         }}
-        className={style.clearBtn}
+        className={styles.clearBtn}
       >
         &times;
       </button>
-      <div className={style.divider}></div>
-      <div className={style.caret}></div>
-      <ul className={`${style.options} ${isOpen && style.show}`}>
+      <div className={styles.divider}></div>
+      <div className={styles.caret}></div>
+      <ul className={`${styles.options} ${isOpen ? styles.show : ""}`}>
         {options.map((option, index) => (
           <li
-            onMouseEnter={() => setMouseEnterElem(index)}
+            onMouseEnter={() => setMouseEnterIndex(index)}
             onClick={(e: MouseEvent<HTMLLIElement>) => {
               e.stopPropagation();
-              selectOptions(option);
-              setIsOpen(false);
+              selectOption(option);
             }}
-            key={option.label}
-            className={`${style.option} ${
-              value === option ? style.selected : ""
-            } ${mouseEnterElem === index ? style.highlighted : ""}`}
+            key={option.value}
+            className={`${styles.option} ${
+              isOptionSelected(option) ? styles.selected : ""
+            } ${mouseEnterIndex === index ? styles.highlighted : ""}`}
           >
-            {option.label}
+            {option.lable}
           </li>
         ))}
       </ul>

@@ -17,6 +17,9 @@
 
 .value {
   flex-grow: 1;
+  display: flex;
+  gap: 0.5em;
+  flex-wrap: wrap;
 }
 
 .clesrBtn {
@@ -79,4 +82,28 @@
 .option.highlighted {
   background-color: hsl(200, 100%, 50%);
   color: white;
+}
+
+.optionBage {
+  display: flex;
+  align-items: center;
+  border: 0.05em solid #777;
+  border-radius: 0.25em;
+  padding: 0.15em 0.25em;
+  gap: 0.25em;
+  cursor: pointer;
+  background: none;
+  outline: none;
+}
+
+.optionBage:hover,
+.optionBage:focus {
+  background-color: hsl(0, 100%, 90%);
+  border-color: hsl(0, 100%, 50%);
+}
+
+.optionBage:hover > .removeBtn,
+.optionBage:focus > .removeBtn {
+  color: hsl(0, 100%, 50%);
+  scale: 1.25;
 }
