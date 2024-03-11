@@ -1,5 +1,6 @@
 import style from "./app.module.css";
 import Select from "../Select/Select";
+import { useState } from "react";
 
 const options = [
   { lable: "First", value: 1 },
@@ -9,7 +10,12 @@ const options = [
 ];
 
 function App() {
-  return <Select options={options} />;
+  const [value, setValue] = useState<(typeof options)[0] | undefined>(
+    options[0]
+  );
+  return (
+    <Select options={options} value={value} onChange={(o) => setValue(o)} />
+  );
 }
 
 export default App;
